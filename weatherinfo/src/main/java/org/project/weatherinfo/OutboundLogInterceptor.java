@@ -19,7 +19,6 @@ public class OutboundLogInterceptor implements ClientHttpRequestInterceptor {
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
         log.info("--------------------Outbound Request Log------------------------");
         log.info("Outbound Request at Interceptor: {}",request.getURI());
-        log.info("Outbound Request Body: {}",new String(body));
         log.info("Outbound Request Headers: {}",request.getHeaders());
         log.info("Outbound Request Method: {}",request.getMethod());
         log.info("--------------------Outbound Request Log-----------------------");

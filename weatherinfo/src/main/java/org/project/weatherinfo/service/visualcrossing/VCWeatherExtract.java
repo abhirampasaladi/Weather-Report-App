@@ -1,31 +1,47 @@
 package org.project.weatherinfo.service.visualcrossing;
 
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.project.weatherinfo.dto.visualcrossing.VCWeatherInfo;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.concurrent.Callable;
 
+@Service
 @Slf4j
+@Setter
 public class VCWeatherExtract implements Callable<VCWeatherInfo> {
 
-    private final String vcApiKey;
+    @Value("${vc_api_key}")
+    private String vcApiKey;
 
-    private final String postalCode;
+    @Value("${vc_url}")
+    private String vcUrl;
 
-    public VCWeatherExtract(String postalCode,String vcApiKey) {
-        this.postalCode = postalCode;
-        this.vcApiKey = vcApiKey;
+    @Value("${vc_url_path}")
+    private String vcUrlPath;
+
+    @Value("${vc_url_query_parameters}")
+    private String vcUrlQuery;
+
+    private String postalCode;
+
+    private final RestTemplate restTemplate;
+
+    public VCWeatherExtract(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     @Override
     public VCWeatherInfo call() throws Exception {
         log.info("In VC WeatherExtract call");
-        String url = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{postalCode}/today?unitGroup=metric&include=current&key={cv_api_key}&contentType=json";
-        url = url.replace("{postalCode}", postalCode);
-        url = url.replace("{cv_api_key}", vcApiKey);
-        WebClient.Builder clientBuilder = WebClient.builder();
-        VCWeatherInfo vcWeatherInfo = clientBuilder.build().get().uri(url).retrieve().bodyToMono(VCWeatherInfo.class).block();
+        String url = vcUrl + vcUrlPath.replace("{postalCode}", postalCode) + vcUrlQuery.replace("{cv_api_key}", vcApiKey);
+        VCWeatherInfo vcWeatherInfo = restTemplate.getForObject(url, VCWeatherInfo.class);
+//        WebClient.Builder clientBuilder = WebClient.builder();
+//        VCWeatherInfo vcWeatherInfo = clientBuilder.build().get().uri(url).retrieve().bodyToMono(VCWeatherInfo.class).block();
         log.info("In VC WeatherExtract call");
         return vcWeatherInfo;
     }
