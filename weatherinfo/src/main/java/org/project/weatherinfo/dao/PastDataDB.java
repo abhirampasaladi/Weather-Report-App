@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDateTime;
 
@@ -16,10 +17,11 @@ import java.time.LocalDateTime;
 public class PastDataDB {
 
     @Id
-    @Column(name = "date")
+    @Column(name = "datetime")
     private LocalDateTime localDateTime;
 
-    @Column(name = "weatherCondition")
+    @Column(name = "weathercondition")
+    @Length(max = 1000)
     private String accuAndVCWeatherInfoDB;
 
     public PastDataDB(LocalDateTime localDateTime, String accuAndVCWeatherInfoDB) {
