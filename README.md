@@ -37,10 +37,11 @@ To use this RESTful API:
      ```
 3. **Database Configuration**
    - Creat a Database with name "weatherDB" and table with name "historydb".
-🗄️ Database Schema (historydb)
-The application uses a PostgreSQL database to store historical weather information fetched from AccuWeather and Visual Crossing APIs. The corresponding table for the entity PastDataDB is named historydb.
-
-✅ Table Structure
+## 🗄️ Database Schema — `historydb`
+This application logs and stores historical weather data queried from **AccuWeather** and **Visual Crossing** APIs into a PostgreSQL table named `historydb`. The `PastDataDB` JPA entity maps directly to this table.
+---
+### ✅ Table Structure
+```sql
 CREATE TABLE historydb (
   datetime TIMESTAMP PRIMARY KEY,
   postalcode VARCHAR(255),
@@ -54,7 +55,7 @@ CREATE TABLE historydb (
   vccondition VARCHAR(255)
 );
 
-🔍 Column Details
+## 🔍 *Column Details*
 Column Name	Type	Description
 datetime	TIMESTAMP	Primary Key. Local date and time of data entry
 postalcode	VARCHAR(255)	Zip code used to query the weather data
@@ -67,9 +68,12 @@ vctemp	VARCHAR(255)	Temperature from Visual Crossing
 vcfeelslike	VARCHAR(255)	"Feels Like" temperature from Visual Crossing
 vccondition	VARCHAR(255)	Weather condition from Visual Crossing
 
+## ⚙️ *Database Configuration*
+Update your PostgreSQL credentials and database URL in the properties file:
+File: src/main/resources/application-dev.properties
   - Update your PostgreSQL credentials:
-     - `username`, `password`, and `URL`  
-  - File to modify: `src/main/resources/application-dev.properties`
-  - spring.datasource.url=jdbc:postgresql://localhost:5432/weatherDB
-  - spring.datasource.username=?
-  - spring.datasource.password=?
+     - `username`, `password`, and `URL`
+spring.datasource.url=jdbc:postgresql://localhost:5432/weatherDB
+spring.datasource.username=YOUR_USERNAME
+spring.datasource.password=YOUR_PASSWORD
+ 
