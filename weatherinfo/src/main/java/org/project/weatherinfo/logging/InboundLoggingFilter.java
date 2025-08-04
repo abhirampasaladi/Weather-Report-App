@@ -1,4 +1,4 @@
-package org.project.weatherinfo;
+package org.project.weatherinfo.logging;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,20 +26,20 @@ public class InboundLoggingFilter extends FilterRegistrationBean<InboundLoggingF
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        log.info(">>>>>>>>>>>>>> Inbound Logging Request <<<<<<<<<<<<<");
         if (request instanceof HttpServletRequest httpRequest) {
-            log.info("request Uri: {}",httpRequest.getRequestURI());
-            log.info("request Method: {}",httpRequest.getMethod());
-            log.info("request URL: {}",httpRequest.getRequestURL());
+            log.info("Inbound HTTP Request Received - URI: {}, Method: {}, URL: {}",
+                    httpRequest.getRequestURI(),
+                    httpRequest.getMethod(),
+                    httpRequest.getRequestURL());
+        } else {
+            log.info("Inbound Request Received: Non-HTTP request");
         }
-
-        log.info(">>>>>>>>>>>>>>>>> Inbound Logging Request <<<<<<<<<<<<<<<");
         chain.doFilter(request, response);
     }
 
     @Override
     public void destroy() {
-        log.info("-----------In Inbound Logging Request-Ended-------------");
+        log.info("Inbound Request Processing Ended");
         Filter.super.destroy();
     }
 }

@@ -1,10 +1,12 @@
 package org.project.weatherinfo;
 
 import lombok.extern.slf4j.Slf4j;
+import org.project.weatherinfo.logging.OutboundLogInterceptor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
@@ -14,11 +16,11 @@ import java.util.List;
 @Profile("dev")
 @Slf4j
 @EnableScheduling
+@EnableAsync
 public class WeatherinfoApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(WeatherinfoApplication.class, args);
-        log.info("WeatherinfoApplication started in " +System.getenv("profile.status"));
     }
 
     @Bean

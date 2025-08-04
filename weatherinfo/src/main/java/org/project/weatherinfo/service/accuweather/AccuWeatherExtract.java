@@ -1,22 +1,21 @@
 package org.project.weatherinfo.service.accuweather;
 
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.project.weatherinfo.dto.WeatherDataDTO;
 import org.project.weatherinfo.dto.accuweather.AccuWeatherInfo;
 import org.project.weatherinfo.dto.accuweather.CityKeyInfo;
+import org.project.weatherinfo.service.WeatherExtractService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 
-@Service
+@Service("acWeatherInfo")
 @Slf4j
-@Setter
-public class AccuWeatherExtract implements Callable<AccuWeatherInfo> {
-
+public class AccuWeatherExtract implements WeatherExtractService {
 
     @Value("${acc_api_key}")
     private String accuApiKey;
@@ -41,12 +40,9 @@ public class AccuWeatherExtract implements Callable<AccuWeatherInfo> {
 
     private final RestTemplate restTemplate;
 
-    private String postalCode;
-
     public AccuWeatherExtract(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
-
 
     public CityKeyInfo getCityKeyInfo(String postalCode) {
         String url = accApiUrl+accApiUrlPath+accApiUrlQuery.replace("{API_KEY}", accuApiKey).replace("{postalCode}", postalCode);
@@ -58,14 +54,20 @@ public class AccuWeatherExtract implements Callable<AccuWeatherInfo> {
     }
 
     @Override
-    public AccuWeatherInfo call(){
-        log.info("In AccuWeatherExtract call");
+    @Async
+    public CompletableFuture<WeatherDataDTO> weatherExtract(String postalCode) {
         CityKeyInfo cityKeyInfo = getCityKeyInfo(postalCode);
         String url= accUrl+ accUrlPath.replace("{locationKey}", cityKeyInfo.getCityKey())+ accUrlQueryParameters.replace("{API_KEY}", accuApiKey);
-        ResponseEntity<AccuWeatherInfo[]> responseEntity = restTemplate.getForEntity(url, AccuWeatherInfo[].class);
-        assert responseEntity.getBody() != null;
-        AccuWeatherInfo weatherDetails = responseEntity.getBody()[0];
-        log.info("In AccuWeatherExtract call");
-        return weatherDetails;
+        AccuWeatherInfo[] responseEntity = restTemplate.getForEntity(url, AccuWeatherInfo[].class).getBody();
+        assert responseEntity != null;
+        AccuWeatherInfo weatherDetails = responseEntity[0];
+        return CompletableFuture.completedFuture(WeatherDataDTO.builder()
+                .postalCode(postalCode)
+                .dateTime(weatherDetails.getDateTime())
+                .weatherConditions(weatherDetails.getWeatherState())
+                .hasPrecipitation(weatherDetails.getHasPrecipitation())
+                .isDayTime(weatherDetails.getIsDayTime())
+                .temperature(weatherDetails.getTemperatureInfo().getTemperatureInFahrenheit().getTemperature()+" F")
+                .build());
     }
 }

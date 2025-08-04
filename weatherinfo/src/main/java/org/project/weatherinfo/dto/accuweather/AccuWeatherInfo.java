@@ -10,7 +10,7 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AccuWeatherInfo {
     @JsonProperty("LocalObservationDateTime")
-    private String DateTime;
+    private String dateTime;
 
     @JsonProperty("WeatherText")
     private String weatherState;

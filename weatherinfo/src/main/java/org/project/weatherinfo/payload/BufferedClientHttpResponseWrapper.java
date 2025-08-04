@@ -1,5 +1,6 @@
-package org.project.weatherinfo;
+package org.project.weatherinfo.payload;
 
+import org.springframework.lang.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
@@ -9,9 +10,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class BufferedClientHttpResponseWrapper implements ClientHttpResponse {
+public class BufferedClientHttpResponseWrapper implements ClientHttpResponse{
     private final ClientHttpResponse response;
-    private byte[] buffer;
+    private final byte[] buffer;
 
     public BufferedClientHttpResponseWrapper(ClientHttpResponse response) throws IOException {
         this.response = response;
@@ -19,12 +20,12 @@ public class BufferedClientHttpResponseWrapper implements ClientHttpResponse {
     }
 
     @Override
-    public HttpStatusCode getStatusCode() throws IOException {
+    public @NonNull HttpStatusCode getStatusCode() throws IOException {
         return response.getStatusCode();
     }
 
     @Override
-    public String getStatusText() throws IOException {
+    public @NonNull String getStatusText() throws IOException {
         return response.getStatusText();
     }
 
@@ -34,12 +35,12 @@ public class BufferedClientHttpResponseWrapper implements ClientHttpResponse {
     }
 
     @Override
-    public InputStream getBody() throws IOException {
+    public @NonNull InputStream getBody() {
         return new ByteArrayInputStream(buffer);
     }
 
     @Override
-    public HttpHeaders getHeaders() {
+    public @NonNull HttpHeaders getHeaders() {
         return response.getHeaders();
     }
 }

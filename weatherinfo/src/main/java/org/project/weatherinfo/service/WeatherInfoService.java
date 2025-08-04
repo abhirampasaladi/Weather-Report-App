@@ -1,45 +1,76 @@
 package org.project.weatherinfo.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.project.weatherinfo.dto.AccuAndVCWeatherInfo;
-import org.project.weatherinfo.dto.accuweather.AccuWeatherInfo;
-import org.project.weatherinfo.dto.visualcrossing.VCWeatherInfo;
-import org.project.weatherinfo.service.accuweather.AccuWeatherExtract;
-import org.project.weatherinfo.service.visualcrossing.VCWeatherExtract;
-import org.springframework.http.ResponseEntity;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.project.weatherinfo.dto.AllWeatherInfoWrapper;
+import org.project.weatherinfo.dto.PastDataDTO;
+import org.project.weatherinfo.dto.PastDataTempDTO;
+import org.project.weatherinfo.dto.WeatherDataDTO;
+import org.project.weatherinfo.exception.WeatherDataProcessingException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
 
 @Service
 public class WeatherInfoService {
 
-    private final AccuWeatherExtract accuWeatherExtract;
-    private final VCWeatherExtract vcWeatherExtract;
     private final DBCrudService dbCrudService;
+    private final ObjectMapper objectMapper;
+    private final Map<String, WeatherExtractService> weatherExtractServiceMap;
 
-    public WeatherInfoService(AccuWeatherExtract accuWeatherExtract, VCWeatherExtract vcWeatherExtract, DBCrudService dbCrudService) {
-        this.accuWeatherExtract = accuWeatherExtract;
-        this.vcWeatherExtract = vcWeatherExtract;
+    public WeatherInfoService(DBCrudService dbCrudService, ObjectMapper objectMapper, Map<String, WeatherExtractService> weatherExtractServiceMap) {
         this.dbCrudService = dbCrudService;
+        this.objectMapper = objectMapper;
+        this.weatherExtractServiceMap = weatherExtractServiceMap;
     }
 
-    public ResponseEntity<AccuAndVCWeatherInfo> retrieveWeatherInfo(String postalCode) throws ExecutionException, InterruptedException, JsonProcessingException {
-        Future<AccuWeatherInfo> accuWeatherInfoFuture;
-        Future<VCWeatherInfo> vcWeatherInfoFuture;
-        try (ExecutorService executorService = Executors.newFixedThreadPool(2)) {
-            accuWeatherExtract.setPostalCode(postalCode);
-            vcWeatherExtract.setPostalCode(postalCode);
-            accuWeatherInfoFuture = executorService.submit(accuWeatherExtract);
-            vcWeatherInfoFuture = executorService.submit(vcWeatherExtract);
-            executorService.shutdown();
-        }
-        AccuAndVCWeatherInfo accuAndVCWeatherInfo = new AccuAndVCWeatherInfo(accuWeatherInfoFuture.get(), vcWeatherInfoFuture.get());
-        dbCrudService.updateDB(accuAndVCWeatherInfo);
-        return ResponseEntity.ok(accuAndVCWeatherInfo);
+    public AllWeatherInfoWrapper retrieveCurrentWeatherInfo(String postalCode) throws ExecutionException, InterruptedException {
+        CompletableFuture<WeatherDataDTO> acFuture = weatherExtractServiceMap.get("acWeatherInfo").weatherExtract(postalCode);
+        CompletableFuture<WeatherDataDTO> vcFuture = weatherExtractServiceMap.get("vcWeatherInfo").weatherExtract(postalCode);
+        CompletableFuture.allOf(acFuture, vcFuture).join();
+        return new AllWeatherInfoWrapper(acFuture.get(), vcFuture.get());
+    }
+
+    public PastDataTempDTO retrieveCurrentWeatherTemperatures(String postalCode) throws ExecutionException, InterruptedException {
+        CompletableFuture<WeatherDataDTO> acFuture = weatherExtractServiceMap.get("acWeatherInfo").weatherExtract(postalCode);
+        CompletableFuture<WeatherDataDTO> vcFuture = weatherExtractServiceMap.get("vcWeatherInfo").weatherExtract(postalCode) ;
+        CompletableFuture.allOf(acFuture, vcFuture).join();
+        AllWeatherInfoWrapper accuAndVCWeatherInfo = new AllWeatherInfoWrapper(acFuture.get(), vcFuture.get());
+        return PastDataTempDTO.builder()
+                .dateTime(LocalDateTime.now())
+                .acTemperature(accuAndVCWeatherInfo.getAccuWeatherInfo().getTemperature() +" F")
+                .vcTemperature(accuAndVCWeatherInfo.getVcWeatherInfo().getTemperature()+ " C")
+                .postalCode(postalCode)
+                .acWeatherCondition(accuAndVCWeatherInfo.getAccuWeatherInfo().getWeatherConditions())
+                .vcWeatherCondition(accuAndVCWeatherInfo.getVcWeatherInfo().getWeatherConditions())
+                .build();
+    }
+
+    public List<PastDataDTO> retrieveWeatherInPastHrs(String postalCode, LocalDateTime fromDate, LocalDateTime toDate) {
+        List<PastDataDTO> listPastData = new ArrayList<>();
+        dbCrudService.getAllDB().forEach(pastDataDB -> {
+            if(pastDataDB.getLocalDateTime().isBefore(toDate) && pastDataDB.getLocalDateTime().isAfter(fromDate) && pastDataDB.getPostalCode().equals(postalCode)) {
+                try {
+                    listPastData.add(new PastDataDTO(pastDataDB.getLocalDateTime(), objectMapper.readValue(pastDataDB.getAccuAndVCWeatherInfo(), AllWeatherInfoWrapper.class)));
+                } catch (JsonProcessingException e) {
+                    throw new WeatherDataProcessingException("Failed to parse weather info JSON for postalCode: " + postalCode, e);
+                }
+            }
+        });
+        return listPastData;
+    }
+
+    public List<PastDataTempDTO> retrieveTemperaturesInPast(String postalCode, LocalDateTime fromDate, LocalDateTime toDate) {
+        List<PastDataTempDTO> listPastDataTemp = new ArrayList<>();
+        dbCrudService.getAllDB().forEach(pastDataDB -> {
+            if(pastDataDB.getLocalDateTime().isBefore(toDate) && pastDataDB.getLocalDateTime().isAfter(fromDate) && pastDataDB.getPostalCode().equals(postalCode)) {
+                listPastDataTemp.add(new PastDataTempDTO(pastDataDB.getLocalDateTime(),postalCode,pastDataDB.getAccuWeatherInfoTemp(), pastDataDB.getVcWeatherInfoTemp(), pastDataDB.getVcWeatherInfoCondition(), pastDataDB.getAccuWeatherInfoCondition()));
+            }
+        });
+        return listPastDataTemp;
     }
 }
