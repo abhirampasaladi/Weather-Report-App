@@ -55,7 +55,7 @@ CREATE TABLE historydb (
   vccondition VARCHAR(255)
 );
 
-## 🔍 *Column Details*
+🔍 Column Details
 Column Name	Type	Description
 datetime	TIMESTAMP	Primary Key. Local date and time of data entry
 postalcode	VARCHAR(255)	Zip code used to query the weather data
@@ -68,7 +68,7 @@ vctemp	VARCHAR(255)	Temperature from Visual Crossing
 vcfeelslike	VARCHAR(255)	"Feels Like" temperature from Visual Crossing
 vccondition	VARCHAR(255)	Weather condition from Visual Crossing
 
-## ⚙️ *Database Configuration*
+⚙️ Database Configuration
 Update your PostgreSQL credentials and database URL in the properties file:
 File: src/main/resources/application-dev.properties
   - Update your PostgreSQL credentials:
