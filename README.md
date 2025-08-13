@@ -77,4 +77,18 @@ File: src/main/resources/application-dev.properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/weatherDB
 spring.datasource.username=YOUR_USERNAME
 spring.datasource.password=YOUR_PASSWORD
- 
+
+---
+
+## REST API Endpoints
+
+Base URL: `/weather/us/cities`
+
+| Endpoint | HTTP Method | Query Parameters | Description |
+|----------|-------------|-----------------|-------------|
+| `/current-conditions` | GET | `postalcode` (String, required, 5-digit or 5+4 ZIP format) | Retrieves current weather information for a given postal code. |
+| `/current-conditions/temperatures` | GET | `postalcode` (String, required, 5-digit or 5+4 ZIP format) | Retrieves current temperature information for a given postal code. |
+| `/history-reports` | GET | `postalcode` (String, required), `range` (int, required, past hours) | Retrieves weather data for the past `range` hours. |
+| `/history-reports/temperature/in-past-hr` | GET | `postalcode` (String, required), `range` (int, required, past hours) | Retrieves temperature data for the past `range` hours. |
+| `/history-reports/temperature/between` | GET | `postalcode` (String, required), `from` (LocalDateTime, required, `YYYY-MM-DDTHH:MM:SS±HH:MM`), `to` (LocalDateTime, required, `YYYY-MM-DDTHH:MM:SS±HH:MM`) | Retrieves temperature data between two specific date-time values. |
+
