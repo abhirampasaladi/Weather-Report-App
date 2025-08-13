@@ -44,7 +44,47 @@ Example REST API calls:
   - weather.scheduler.cron=0 0 */1 * * *
   - weather.scheduler.postal-code=19425
 
-### 
+### ⚙️ Configuration Files
+The application uses Spring Boot’s profile-based configuration to separate environment settings.
+There are two main configuration files:
+1. application.properties (Base Configuration)
+- This is the default configuration file, containing common settings shared across all environments.
+- Key Configurations:
+  - spring.application.name=weatherinfo → Defines the application name.
+  - Weather API Keys:
+    - acc_api_key → AccuWeather API key
+    - vc_api_key → Visual Crossing API key.
+  - Scheduler Changes: 
+    - weather.scheduler.postal-code=45220 → Target location postal code.
+    - weather.scheduler.cron=0 0 */1 * * * → Runs every hour.
+  - Weather API Endpoints:
+    - AccuWeather: acc_apikey_url, acc_url_path, acc_url_query_parameters.
+    - Visual Crossing: vc_url, vc_url_path, vc_url_query_parameters.
+  - Database:
+    - PostgreSQL connection settings: URL, username, password.
+  - JPA:
+    - spring.jpa.hibernate.ddl-auto=update → Auto schema update.
+    - spring.jpa.show-sql=true → SQL logs enabled.
+  - Logging:
+    - logging.level.org.springframework.web=DEBUG → Debug logs for web layer.
+  - Profile Handling
+    - spring.config.activate.on-profile=prod → Base file defaults to PROD profile.
+    - spring.profiles.active=dev → Forces dev profile as active for development.
+
+2. application-dev.properties (Development Configuration)
+Overrides settings from the base file for development environment.
+- Differences from Base:
+  - Profile
+    - spring.config.activate.on-profile=dev → Marks this file for DEV environment.
+    - profile.status=DEV-ENV → Custom indicator for DEV mode.
+  - Other Settings
+    - API keys, API endpoints, scheduler, database, and logging remain the same as in base config.
+
+📌 How Profiles Work
+Spring Boot loads application.properties first. Then it overrides with environment-specific files (e.g., application-dev.properties) based on:
+spring.profiles.active in the base config or --spring.profiles.active passed via CLI/ENV variable.
+In this project, I have used profiling for practice purpose and i have set it to "dev". So, make changes in application-dev.properties to reflect changes.
+
 ---
 
 ## ⚙️ Setup Instructions
