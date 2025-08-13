@@ -13,11 +13,13 @@ import org.project.weatherinfo.dto.PastDataTempDTO;
 import org.project.weatherinfo.service.WeatherInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -99,16 +101,25 @@ public class RestApiController {
             @NotBlank(message = "Postal Code Cannot be Null!")
             @Pattern(regexp = "^\\d{5}(-\\d{4})?$", message = "Postal code must be in the 5-4 / 5 digits in format 12345 or 12345-6789!")
             @RequestParam("postalcode") String postalCode,
-            @NotBlank(message = "from DateTime Cannot be Null!")
-            @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}$\n", message = "from Datetime Format is Incorrect YYYY-MM-DDTHH:MM:SS-04:00")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             @RequestParam("from") LocalDateTime fromDate,
-            @NotBlank(message = "to DateTime Cannot be Null!")
-            @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}$\n", message = "to Datetime Format is Incorrect YYYY-MM-DDTHH:MM:SS-04:00")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             @RequestParam("to") LocalDateTime toDate,
             HttpServletRequest request){
+        List<PastDataTempDTO> result = weatherInfoService.retrieveTemperaturesInPast(postalCode, fromDate, toDate);
+        List<PastDataTempDTO> finalResult = result.isEmpty() ? Collections.singletonList(PastDataTempDTO.builder()
+                .acTemperature(HttpStatusCodes.NO_DATA_FOUND.getCode())
+                .vcTemperature(HttpStatusCodes.NO_DATA_FOUND.getCode())
+                .acWeatherCondition(HttpStatusCodes.NO_DATA_FOUND.getCode())
+                .postalCode(postalCode)
+                .vcWeatherCondition(HttpStatusCodes.NO_DATA_FOUND.getCode())
+                .acWeatherCondition(HttpStatusCodes.NO_DATA_FOUND.getCode())
+                .dateTime(LocalDateTime.now())
+                .build())
+                : result;
         return ResponseEntity.ok(new ApiResponseWrapper<>(
                 LocalDateTime.now(), HttpStatusCodes.SUCCESS.getCode(), HttpStatusCodes.SUCCESS,
-                weatherInfoService.retrieveTemperaturesInPast(postalCode, fromDate, toDate),
+                finalResult,
                 request.getRequestURI()));
     }
 }

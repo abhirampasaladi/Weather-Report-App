@@ -12,7 +12,7 @@ public enum HttpStatusCodes {
     NOT_FOUND("404"),
     INTERNAL_SERVER_ERROR("500"),
     NOT_ALLOWED("405"),
-    NO_DATA_FOUND("No Data Found");
+    NO_DATA_FOUND("No Data Found!");
 
     private final String code;
     HttpStatusCodes(String code) {
