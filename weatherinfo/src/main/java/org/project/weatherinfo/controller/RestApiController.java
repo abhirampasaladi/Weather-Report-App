@@ -19,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -89,10 +90,24 @@ public class RestApiController {
             @NotNull(message = "Range cannot be Null!")
             int lastPastHour,
             HttpServletRequest request){
+        List<PastDataTempDTO> result = weatherInfoService.retrieveTemperaturesInPast(postalCode, LocalDateTime.now().minusHours(lastPastHour), LocalDateTime.now());
 
+        return getApiResponseWrapperResponseEntity(postalCode, request, result);
+    }
+
+    private ResponseEntity<ApiResponseWrapper<List<PastDataTempDTO>>> getApiResponseWrapperResponseEntity(@RequestParam("postalcode") @NotBlank(message = "Postal Code Cannot be Null!") @Pattern(regexp = "^\\d{5}(-\\d{4})?$", message = "Postal code must be in the 5-4 / 5 digits in format 12345 or 12345-6789!") String postalCode, HttpServletRequest request, List<PastDataTempDTO> result) {
         return ResponseEntity.ok(new ApiResponseWrapper<>(
                 LocalDateTime.now(), HttpStatusCodes.SUCCESS.getCode(), HttpStatusCodes.SUCCESS,
-                weatherInfoService.retrieveTemperaturesInPast(postalCode, LocalDateTime.now().minusHours(lastPastHour), LocalDateTime.now()),
+                result.isEmpty() ? Collections.singletonList(PastDataTempDTO.builder()
+                        .acTemperature(HttpStatusCodes.NO_DATA_FOUND.getCode())
+                        .vcTemperature(HttpStatusCodes.NO_DATA_FOUND.getCode())
+                        .acWeatherCondition(HttpStatusCodes.NO_DATA_FOUND.getCode())
+                        .postalCode(postalCode)
+                        .vcWeatherCondition(HttpStatusCodes.NO_DATA_FOUND.getCode())
+                        .acWeatherCondition(HttpStatusCodes.NO_DATA_FOUND.getCode())
+                        .dateTime(LocalDateTime.now())
+                        .build())
+                        : result,
                 request.getRequestURI()));
     }
 
@@ -107,19 +122,6 @@ public class RestApiController {
             @RequestParam("to") LocalDateTime toDate,
             HttpServletRequest request){
         List<PastDataTempDTO> result = weatherInfoService.retrieveTemperaturesInPast(postalCode, fromDate, toDate);
-        List<PastDataTempDTO> finalResult = result.isEmpty() ? Collections.singletonList(PastDataTempDTO.builder()
-                .acTemperature(HttpStatusCodes.NO_DATA_FOUND.getCode())
-                .vcTemperature(HttpStatusCodes.NO_DATA_FOUND.getCode())
-                .acWeatherCondition(HttpStatusCodes.NO_DATA_FOUND.getCode())
-                .postalCode(postalCode)
-                .vcWeatherCondition(HttpStatusCodes.NO_DATA_FOUND.getCode())
-                .acWeatherCondition(HttpStatusCodes.NO_DATA_FOUND.getCode())
-                .dateTime(LocalDateTime.now())
-                .build())
-                : result;
-        return ResponseEntity.ok(new ApiResponseWrapper<>(
-                LocalDateTime.now(), HttpStatusCodes.SUCCESS.getCode(), HttpStatusCodes.SUCCESS,
-                finalResult,
-                request.getRequestURI()));
+        return getApiResponseWrapperResponseEntity(postalCode, request, result);
     }
 }

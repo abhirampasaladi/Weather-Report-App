@@ -1,16 +1,12 @@
 package org.project.weatherinfo.payload;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.Setter;
 import org.project.weatherinfo.enums.HttpStatusCodes;
 
 import java.time.LocalDateTime;
 
 @Setter
-@Getter
-@Builder
 public class ApiResponseWrapper<T> {
 
     @JsonProperty("TimeStamp")
@@ -35,4 +31,5 @@ public class ApiResponseWrapper<T> {
         this.data = data;
         this.path = path;
     }
+
 }
