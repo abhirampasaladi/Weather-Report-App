@@ -51,23 +51,23 @@ There are two main configuration files:
 - This is the default configuration file, containing common settings shared across all environments.
 - Key Configurations:
   - spring.application.name=weatherinfo → Defines the application name.
-  - Weather API Keys:
+  - Weather API Keys: Get these secret keys from AccuWeather and VisualCrossing sites under developer settings.
     - acc_api_key → AccuWeather API key
     - vc_api_key → Visual Crossing API key.
-  - Scheduler Changes: 
+  - Scheduler Changes: Change these based on your choice of postal-code and cron scheduled time. Currently set for every 1 hr.
     - weather.scheduler.postal-code=45220 → Target location postal code.
     - weather.scheduler.cron=0 0 */1 * * * → Runs every hour.
-  - Weather API Endpoints:
+  - Weather API Endpoints: No need to change these, unless apis are updated in the datasource sites.
     - AccuWeather: acc_apikey_url, acc_url_path, acc_url_query_parameters.
     - Visual Crossing: vc_url, vc_url_path, vc_url_query_parameters.
-  - Database:
+  - Database: Change these based on your PostgreSQL database settings.
     - PostgreSQL connection settings: URL, username, password.
   - JPA:
     - spring.jpa.hibernate.ddl-auto=update → Auto schema update.
     - spring.jpa.show-sql=true → SQL logs enabled.
   - Logging:
     - logging.level.org.springframework.web=DEBUG → Debug logs for web layer.
-  - Profile Handling
+  - Profile Handling: Not necessary to change unless you want to use application.properties instead of application-dev.properties.
     - spring.config.activate.on-profile=prod → Base file defaults to PROD profile.
     - spring.profiles.active=dev → Forces dev profile as active for development.
 
