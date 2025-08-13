@@ -1,5 +1,5 @@
 ## 🌦️ Weather Data Aggregator App
-This is a **Spring Boot-based Weather App** that aggregates weather information from multiple external APIs like **AccuWeather** and **Visual Crossing Weather**. It provides a RESTful API to fetch current weather, temperature data, and historical reports based on U.S. postal codes.
+This is a **Spring Boot-based Weather App** that aggregates weather information from multiple external APIs like **AccuWeather** and **Visual Crossing Weather**. It also facilitates in storing the weather information of a Postal-code in a database and retrieve it later as past history data. It provides a RESTful API to fetch current weather, temperature data, and historical reports based on U.S. postal codes.
 
 ### 🛠 Tech Stack
 - **Backend:** Java 21, Spring Boot 3.5.3, Spring Web, Spring Data JPA
