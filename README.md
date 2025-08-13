@@ -39,6 +39,7 @@ To use this RESTful API:
    - Creat a Database with name "weatherDB" and table with name "historydb".
 ## 🗄️ Database Schema — `historydb`
 Stores historical weather data from **AccuWeather** and **Visual Crossing** APIs into a PostgreSQL table named `historydb`. Mapped to the `PastDataDB` JPA entity.
+
 ---
 ### ✅ Table Structure
 ```sql
