@@ -30,6 +30,12 @@ Base URL: `/weather/us/cities`
 | `/history-reports/temperature/in-past-hr` | GET | `postalcode` (String, required), `range` (int, required, past hours) | Retrieves temperature data for the past `range` hours. |
 | `/history-reports/temperature/between` | GET | `postalcode` (String, required), `from` (LocalDateTime, required, `YYYY-MM-DDTHH:MM:SS±HH:MM`), `to` (LocalDateTime, required, `YYYY-MM-DDTHH:MM:SS±HH:MM`) | Retrieves temperature data between two specific date-time values. |
 
+Example REST API calls:
+- http://localhost:8080/weather/us/cities/current-conditions?postalcode=19087-5317
+- http://localhost:8080/weather/us/cities/current-conditions?postalcode=19087
+- http://localhost:8080/weather/us/cities/history-reports/temperature/in-past-hr?range=500&postalcode=45220
+- http://localhost:8080/weather/us/cities/history-reports/temperature/between?from=2025-08-01T11:00:00&to=2025-08-04T20:00:00&postalcode=19425
+
 ### ⏳ Scheduled Weather Data Storage
 - Implemented an asynchronous scheduled task to periodically fetch current weather data for a configurable postal code and store it in the database.
 - Cron expression and postal code are externalized via application.properties (weather.scheduler.cron and weather.scheduler.postal-code), allowing schedule and location changes without modifying code.
@@ -38,6 +44,7 @@ Base URL: `/weather/us/cities`
   - weather.scheduler.cron=0 0 */1 * * *
   - weather.scheduler.postal-code=19425
 
+### 
 ---
 
 ## ⚙️ Setup Instructions
