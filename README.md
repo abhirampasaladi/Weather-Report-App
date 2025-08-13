@@ -19,6 +19,72 @@ This is a **Spring Boot-based Weather App** that aggregates weather information 
   - **Builder Pattern**
   - **Factory Pattern**
 
+### 🔍 REST API Endpoints
+Base URL: `/weather/us/cities`
+
+| Endpoint | HTTP Method | Query Parameters | Description |
+|----------|-------------|-----------------|-------------|
+| `/current-conditions` | GET | `postalcode` (String, required, 5-digit or 5+4 ZIP format) | Retrieves current weather information for a given postal code. |
+| `/current-conditions/temperatures` | GET | `postalcode` (String, required, 5-digit or 5+4 ZIP format) | Retrieves current temperature information for a given postal code. |
+| `/history-reports` | GET | `postalcode` (String, required), `range` (int, required, past hours) | Retrieves weather data for the past `range` hours. |
+| `/history-reports/temperature/in-past-hr` | GET | `postalcode` (String, required), `range` (int, required, past hours) | Retrieves temperature data for the past `range` hours. |
+| `/history-reports/temperature/between` | GET | `postalcode` (String, required), `from` (LocalDateTime, required, `YYYY-MM-DDTHH:MM:SS±HH:MM`), `to` (LocalDateTime, required, `YYYY-MM-DDTHH:MM:SS±HH:MM`) | Retrieves temperature data between two specific date-time values. |
+
+Example REST API calls:
+- http://localhost:8080/weather/us/cities/current-conditions?postalcode=19087-5317
+- http://localhost:8080/weather/us/cities/current-conditions?postalcode=19087
+- http://localhost:8080/weather/us/cities/history-reports/temperature/in-past-hr?range=500&postalcode=45220
+- http://localhost:8080/weather/us/cities/history-reports/temperature/between?from=2025-08-01T11:00:00&to=2025-08-04T20:00:00&postalcode=19425
+
+### ⏳ Scheduled Weather Data Storage
+- Implemented an asynchronous scheduled task to periodically fetch current weather data for a configurable postal code and store it in the database.
+- Cron expression and postal code are externalized via application.properties (weather.scheduler.cron and weather.scheduler.postal-code), allowing schedule and location changes without modifying code.
+- Uses Spring’s @Scheduled for task scheduling and @Async for non-blocking execution.
+- application-dev.properties changes:
+  - weather.scheduler.cron=0 0 */1 * * *
+  - weather.scheduler.postal-code=19425
+
+### ⚙️ Configuration Files
+The application uses Spring Boot’s profile-based configuration to separate environment settings.
+There are two main configuration files:
+1. application.properties (Base Configuration)
+- This is the default configuration file, containing common settings shared across all environments.
+- Key Configurations:
+  - spring.application.name=weatherinfo → Defines the application name.
+  - Weather API Keys: Get these secret keys from AccuWeather and VisualCrossing sites under developer settings.
+    - acc_api_key → AccuWeather API key
+    - vc_api_key → Visual Crossing API key.
+  - Scheduler Changes: Change these based on your choice of postal-code and cron scheduled time. Currently set for every 1 hr.
+    - weather.scheduler.postal-code=45220 → Target location postal code.
+    - weather.scheduler.cron=0 0 */1 * * * → Runs every hour.
+  - Weather API Endpoints: No need to change these, unless apis are updated in the datasource sites.
+    - AccuWeather: acc_apikey_url, acc_url_path, acc_url_query_parameters.
+    - Visual Crossing: vc_url, vc_url_path, vc_url_query_parameters.
+  - Database: Change these based on your PostgreSQL database settings.
+    - PostgreSQL connection settings: URL, username, password.
+  - JPA:
+    - spring.jpa.hibernate.ddl-auto=update → Auto schema update.
+    - spring.jpa.show-sql=true → SQL logs enabled.
+  - Logging:
+    - logging.level.org.springframework.web=DEBUG → Debug logs for web layer.
+  - Profile Handling: Not necessary to change unless you want to use application.properties instead of application-dev.properties.
+    - spring.config.activate.on-profile=prod → Base file defaults to PROD profile.
+    - spring.profiles.active=dev → Forces dev profile as active for development.
+
+2. application-dev.properties (Development Configuration)
+Overrides settings from the base file for development environment.
+- Differences from Base:
+  - Profile
+    - spring.config.activate.on-profile=dev → Marks this file for DEV environment.
+    - profile.status=DEV-ENV → Custom indicator for DEV mode.
+  - Other Settings
+    - API keys, API endpoints, scheduler, database, and logging remain the same as in base config.
+
+📌 How Profiles Work
+- Spring Boot loads application.properties first. Then it overrides with environment-specific files (e.g., application-dev.properties) based on:
+  - spring.profiles.active in the base config or --spring.profiles.active passed via CLI/ENV variable.
+- In this project, I have used profiling for practice purpose and i have set it to "dev". So, make changes in application-dev.properties to reflect changes.
+
 ---
 
 ## ⚙️ Setup Instructions
@@ -39,6 +105,7 @@ To use this RESTful API:
    - Creat a Database with name "weatherDB" and table with name "historydb".
 ## 🗄️ Database Schema — `historydb`
 Stores historical weather data from **AccuWeather** and **Visual Crossing** APIs into a PostgreSQL table named `historydb`. Mapped to the `PastDataDB` JPA entity.
+
 ---
 ### ✅ Table Structure
 ```sql
@@ -76,4 +143,4 @@ File: src/main/resources/application-dev.properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/weatherDB
 spring.datasource.username=YOUR_USERNAME
 spring.datasource.password=YOUR_PASSWORD
- 
+
