@@ -81,9 +81,9 @@ Overrides settings from the base file for development environment.
     - API keys, API endpoints, scheduler, database, and logging remain the same as in base config.
 
 📌 How Profiles Work
-Spring Boot loads application.properties first. Then it overrides with environment-specific files (e.g., application-dev.properties) based on:
-spring.profiles.active in the base config or --spring.profiles.active passed via CLI/ENV variable.
-In this project, I have used profiling for practice purpose and i have set it to "dev". So, make changes in application-dev.properties to reflect changes.
+- Spring Boot loads application.properties first. Then it overrides with environment-specific files (e.g., application-dev.properties) based on:
+  - spring.profiles.active in the base config or --spring.profiles.active passed via CLI/ENV variable.
+- In this project, I have used profiling for practice purpose and i have set it to "dev". So, make changes in application-dev.properties to reflect changes.
 
 ---
 
